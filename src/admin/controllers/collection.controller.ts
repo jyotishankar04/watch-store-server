@@ -54,7 +54,14 @@ const getAllCollection = async (
   next: NextFunction
 ): Promise<any> => {
   try {
-    const collections = await prisma.collections.findMany();
+    const collections = await prisma.collections.findMany({
+      include: {
+        _count: true,
+      },
+      orderBy: {
+        name: "asc",
+      },
+    });
     if (!collections) {
       return next(createHttpError(500, "Something went wrong"));
     }
@@ -75,18 +82,29 @@ const deleteCollection = async (
 ): Promise<any> => {
   try {
     const id = req.params.id;
-    const collection = await prisma.collections.delete({
-      where: {
-        id: id,
-      },
+    const result = await prisma.$transaction(async (prisma) => {
+      await prisma.products.deleteMany({
+        where: {
+          collectionId: id,
+        },
+      });
+
+      const collection = await prisma.collections.delete({
+        where: {
+          id: id,
+        },
+      });
+
+      return collection;
     });
-    if (!collection) {
+
+    if (!result) {
       return next(createHttpError(500, "Something went wrong"));
     }
 
     return res.status(200).json({
       success: true,
-      data: collection,
+      data: result,
     });
   } catch (error) {
     return next(createHttpError(500, "Something went wrong"));

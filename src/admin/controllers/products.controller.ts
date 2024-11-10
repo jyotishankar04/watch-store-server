@@ -10,7 +10,11 @@ const addProduct = async (
 ): Promise<any> => {
   try {
     const body = req.body;
-    const parse = createProductSchema.safeParse(body);
+
+    const parse = createProductSchema.safeParse({
+      ...body,
+      price: Number(body.price),
+    });
     if (!parse.success) {
       return next(
         createHttpError(
@@ -32,8 +36,12 @@ const addProduct = async (
       data: {
         name: body.name,
         description: body.description,
-        price: body.price,
-        collectionsId: body.collectionsId,
+        price: parseFloat(body.price),
+        Collection: {
+          connect: {
+            id: body.collectionId,
+          },
+        },
         features: {
           createMany: {
             data: body.features.map((feature: any) => ({
@@ -100,7 +108,7 @@ const getAllProducts = async (
         },
         features: true,
         images: true,
-        Collections: true,
+        Collection: true,
       },
     });
     if (!products) {
@@ -113,6 +121,7 @@ const getAllProducts = async (
       data: products,
     });
   } catch (error) {
+    console.log(error);
     return next(createHttpError(500, "Something went wrong"));
   }
 };
@@ -136,7 +145,7 @@ const getProductById = async (
         },
         features: true,
         images: true,
-        Collections: true,
+        Collection: true,
       },
     });
     if (!product) {
@@ -175,7 +184,7 @@ const updateProduct = async (
         },
         features: true,
         images: true,
-        Collections: true,
+        Collection: true,
       },
     });
 
@@ -187,7 +196,7 @@ const updateProduct = async (
       data: {
         name: body.name ?? existingProduct.name,
         description: body.description ?? existingProduct.description,
-        price: body.price ?? existingProduct.price,
+        price: parseFloat(body.price) ?? existingProduct.price,
         features: body.features
           ? {
               set: body.features.map((feature: any) => ({
@@ -271,7 +280,7 @@ const deleteProduct = async (
         },
         features: true,
         images: true,
-        Collections: true,
+        Collection: true,
       },
     });
     if (!product) {

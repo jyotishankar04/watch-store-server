@@ -17,6 +17,7 @@ import {
   getProductById,
   updateProduct,
 } from "../controllers/products.controller";
+import { getFeatures } from "../controllers/feature.controller";
 const router = Router();
 
 router.post("/auth", authenticateAdmin);
@@ -34,5 +35,8 @@ router.get("/products", adminAuthMiddleware, getAllProducts);
 router.delete("/products/:id", adminAuthMiddleware, deleteProduct);
 router.patch("/products/:id", adminAuthMiddleware, updateProduct);
 router.get("/products/:id", adminAuthMiddleware, getProductById);
+
+//! Features
+router.get("/features", adminAuthMiddleware, getFeatures);
 
 export default router;

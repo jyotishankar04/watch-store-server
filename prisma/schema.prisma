@@ -41,13 +41,13 @@ model Products {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  Collections   Collections? @relation(fields: [collectionsId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  collectionsId String?
-
   images          Images[]
   features        Features[]
   TechnicalData   TechnicalData @relation(fields: [technicalDataId], references: [id])
   technicalDataId String
+
+  Collection   Collections? @relation(fields: [collectionId], references: [id])
+  collectionId String?
 }
 
 // https://res.cloudinary.com/djby1yfko/image/upload/v1731149264/23581938_2104.i301.004.S.m004.c13.404_error_isometric_composition_dqhesm.svg
@@ -74,7 +74,6 @@ model TechnicalData {
   waterResistance String?
   logWidth        String?
   creystal        String?
-  productsId      String?
   movement        String?
 
   dimensions   Dimensions? @relation(fields: [dimensionsId], references: [id])
