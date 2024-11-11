@@ -1,25 +1,35 @@
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
+import { Config } from "../config/config";
 
 cloudinary.config({
-  cloud_name: "djby1yfko",
-  api_key: "523555972596923",
-  api_secret: "<your_api_secret>", // Click 'View API Keys' above to copy your API secret
+  cloud_name: Config.CLOUDINARY_CLOUD_NAME,
+  api_key: Config.CLOUDINARY_API_KEY,
+  api_secret: Config.CLOUDINARY_API_SECRET, // Click 'View API Keys' above to copy your API secret
 });
 
-const uploadOnCloudinary = async (localFilePath: string) => {
+const uploadOnCloudinary = async (localFilePath: string, folder?: string) => {
   try {
-    if (!localFilePath) return Error("No file found");
+    if (!localFilePath) return null;
     const response = await cloudinary.uploader.upload(localFilePath, {
       resource_type: "auto",
+      folder: folder || "justwatchtemp",
     });
     fs.unlinkSync(localFilePath);
     return response;
   } catch (error) {
     fs.unlinkSync(localFilePath);
-    return Error("Something went wrong");
+    return null;
   }
 };
 
-export { uploadOnCloudinary };
+const deleteOnCloudinary = async (publicId: string) => {
+  try {
+    return await cloudinary.uploader.destroy(publicId);
+  } catch (error) {
+    return null;
+  }
+};
+
+export { uploadOnCloudinary, deleteOnCloudinary };
 export default cloudinary;

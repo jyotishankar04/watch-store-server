@@ -21,13 +21,13 @@ model User {
 }
 
 model Collections {
-  id          String  @id @default(uuid())
+  id          String   @id @default(uuid())
   name        String
   description String?
-  image       String? @default("https://res.cloudinary.com/djby1yfko/image/upload/v1725814229/1724436300_epoa7k.jpg")
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  image       String?  @default("https://res.cloudinary.com/djby1yfko/image/upload/v1725814229/1724436300_epoa7k.jpg")
+  publicId    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   products Products[]
 }
@@ -56,6 +56,7 @@ model Images {
   url        String
   Products   Products? @relation(fields: [productsId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   productsId String?
+  publicId   String
 }
 
 model Features {

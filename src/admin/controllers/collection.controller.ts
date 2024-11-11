@@ -3,6 +3,8 @@ import createHttpError from "http-errors";
 import { createCollectionSchema } from "../../utils/adminValidator";
 import prisma from "../../config/prisma.config";
 import { CustomRequest } from "../../types/types";
+import { deleteOnCloudinary, uploadOnCloudinary } from "../../utils/cloudinary";
+import { CLOUDINARY_FOLDERS } from "../../constants/cloudinary.constants";
 
 const addCollection = async (
   req: Request,
@@ -20,13 +22,6 @@ const addCollection = async (
         )
       );
     }
-    const _req = req as CustomRequest;
-    const file = _req.files?.collectionImage?.[0].path;
-    console.log(file);
-    if (!file) {
-      return next(createHttpError(400, "Files are required"));
-    }
-
     const isExist = await prisma.collections.findFirst({
       where: {
         name: body.name,
@@ -36,10 +31,26 @@ const addCollection = async (
       return next(createHttpError(400, "Collection already exist"));
     }
 
+    const _req = req as CustomRequest;
+    const file = _req.files?.collectionImage?.[0].path;
+    console.log(file);
+    if (!file) {
+      return next(createHttpError(400, "Files are required"));
+    }
+    const result = await uploadOnCloudinary(
+      file,
+      CLOUDINARY_FOLDERS.COLLECTIONS
+    );
+
+    if (!result) {
+      return next(createHttpError(500, "Something went wrong"));
+    }
+
     const collection = await prisma.collections.create({
       data: {
         name: body.name,
-        image: body.image,
+        image: result.secure_url,
+        publicId: result.public_id,
         description: body.description,
       },
     });
@@ -92,6 +103,21 @@ const deleteCollection = async (
   try {
     const id = req.params.id;
     const result = await prisma.$transaction(async (prisma) => {
+      const collectionExists = await prisma.collections.findUnique({
+        where: {
+          id: id,
+        },
+      });
+
+      if (!collectionExists) {
+        throw new Error(`Collection with ID ${id} does not exist.`);
+      }
+      const deleted = await deleteOnCloudinary(
+        collectionExists.publicId as string
+      );
+      if (!deleted) {
+        return next(createHttpError(500, "Something went wrong"));
+      }
       await prisma.images.deleteMany({
         where: {
           Products: {
