@@ -31,5 +31,13 @@ const deleteOnCloudinary = async (publicId: string) => {
   }
 };
 
-export { uploadOnCloudinary, deleteOnCloudinary };
+const deleteMultipleOnCloudinary = async (publicIds: string[]) => {
+  try {
+    return await cloudinary.api.delete_resources(publicIds);
+  } catch (error) {
+    return null;
+  }
+};
+
+export { uploadOnCloudinary, deleteOnCloudinary, deleteMultipleOnCloudinary };
 export default cloudinary;

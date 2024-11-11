@@ -14,8 +14,8 @@ const createCollectionSchema = z.object({
 const createProductSchema = z.object({
   name: z.string().min(3),
   description: z.string(),
-  image: z.string().optional(),
   collectionId: z.string(),
+  productImages: z.any(),
   price: z.number().min(0),
   features: z.array(z.string()),
   case: z.string(),

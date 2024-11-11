@@ -41,7 +41,12 @@ router.delete("/collections/:id", adminAuthMiddleware, deleteCollection);
 router.patch("/collections/:id", adminAuthMiddleware, updateCollection);
 
 //! products
-router.post("/products", adminAuthMiddleware, addProduct);
+router.post(
+  "/products",
+  adminAuthMiddleware,
+  upload.fields([{ name: "productImages", maxCount: 5 }]),
+  addProduct
+);
 router.get("/products", adminAuthMiddleware, getAllProducts);
 router.delete("/products/:id", adminAuthMiddleware, deleteProduct);
 router.patch("/products/:id", adminAuthMiddleware, updateProduct);

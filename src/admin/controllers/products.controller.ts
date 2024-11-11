@@ -2,6 +2,13 @@ import { NextFunction, Request, Response } from "express";
 import createHttpError from "http-errors";
 import prisma from "../../config/prisma.config";
 import { createProductSchema } from "../../utils/adminValidator";
+import { CustomRequest } from "../../types/types";
+import {
+  deleteMultipleOnCloudinary,
+  deleteOnCloudinary,
+  uploadOnCloudinary,
+} from "../../utils/cloudinary";
+import { CLOUDINARY_FOLDERS } from "../../constants/cloudinary.constants";
 
 const addProduct = async (
   req: Request,
@@ -10,12 +17,12 @@ const addProduct = async (
 ): Promise<any> => {
   try {
     const body = req.body;
-
     const parse = createProductSchema.safeParse({
       ...body,
       price: Number(body.price),
     });
     if (!parse.success) {
+      console.log(parse.error);
       return next(
         createHttpError(
           400,
@@ -32,6 +39,25 @@ const addProduct = async (
       return next(createHttpError(400, "Product already exist"));
     }
 
+    const _req = req as CustomRequest;
+    const files = _req.files?.productImages;
+
+    if (!files) {
+      return next(createHttpError(400, "Files are required"));
+    }
+
+    const imagesResult = await Promise.all(
+      files.map(async (file: any) => {
+        const result = await uploadOnCloudinary(
+          file.path,
+          CLOUDINARY_FOLDERS.PRODUCTS
+        );
+        return {
+          url: result?.secure_url,
+          publicId: result?.public_id,
+        };
+      })
+    );
     const product = await prisma.products.create({
       data: {
         name: body.name,
@@ -47,6 +73,18 @@ const addProduct = async (
             data: body.features.map((feature: any) => ({
               featName: feature,
             })),
+          },
+        },
+        images: {
+          createMany: {
+            data: await Promise.all(
+              imagesResult.map((image: any) => {
+                return {
+                  url: image.url,
+                  publicId: image.publicId,
+                };
+              })
+            ),
           },
         },
         TechnicalData: {
@@ -69,6 +107,7 @@ const addProduct = async (
           },
         },
       },
+
       include: {
         features: true,
         TechnicalData: {
@@ -272,12 +311,19 @@ const deleteProduct = async (
     const result = await prisma.$transaction(async (prisma) => {
       const productExists = await prisma.products.findUnique({
         where: { id },
+        include: {
+          images: true,
+        },
       });
 
       if (!productExists) {
         throw new Error(`Product with ID ${id} does not exist.`);
       }
-
+      const deleteArray = productExists.images.map((image) => image.publicId);
+      const deletedRes = await deleteMultipleOnCloudinary(deleteArray);
+      if (!deletedRes) {
+        return next(createHttpError(500, "Something went wrong"));
+      }
       // Delete related records
       await prisma.images.deleteMany({
         where: { productsId: id },
