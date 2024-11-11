@@ -3,7 +3,7 @@ import createHttpError from "http-errors";
 import { adminAuthSchema } from "../../utils/adminValidator";
 import prisma from "../../config/prisma.config";
 import { generateToken } from "../../app/services/auth.service";
-import { CustomRequest } from "../../middlewares/auth.middleware";
+import { CustomRequest } from "../../types/types";
 
 const authenticateAdmin = async (
   req: Request,

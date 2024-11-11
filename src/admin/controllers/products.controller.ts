@@ -268,31 +268,49 @@ const deleteProduct = async (
 ): Promise<any> => {
   try {
     const id = req.params.id;
-    const product = await prisma.products.delete({
-      where: {
-        id: id,
-      },
-      include: {
-        TechnicalData: {
-          include: {
-            dimensions: true,
+
+    const result = await prisma.$transaction(async (prisma) => {
+      const productExists = await prisma.products.findUnique({
+        where: { id },
+      });
+
+      if (!productExists) {
+        throw new Error(`Product with ID ${id} does not exist.`);
+      }
+
+      // Delete related records
+      await prisma.images.deleteMany({
+        where: { productsId: id },
+      });
+
+      await prisma.features.deleteMany({
+        where: { productsId: id },
+      });
+
+      const product = await prisma.dimensions.deleteMany({
+        where: {
+          TechnicalData: {
+            Products: {
+              id: id,
+            },
           },
         },
-        features: true,
-        images: true,
-        Collection: true,
-      },
+      });
+
+      return product;
     });
-    if (!product) {
+
+    if (!result) {
       return next(createHttpError(500, "Something went wrong"));
     }
 
     return res.status(200).json({
       success: true,
       message: "Product deleted successfully",
-      data: product,
+      data: result,
     });
   } catch (error) {
+    console.log(error);
     return next(createHttpError(500, "Something went wrong"));
   }
 };

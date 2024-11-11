@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken";
 import { Config } from "../../config/config";
 import prisma from "../../config/prisma.config";
 import { generateToken } from "../services/auth.service";
-import { CustomRequest } from "../../middlewares/auth.middleware";
+import { CustomRequest } from "../../types/types";
 
 const authenticateUser = async (
   req: Request,

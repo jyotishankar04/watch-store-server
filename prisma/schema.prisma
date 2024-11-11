@@ -41,13 +41,13 @@ model Products {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  images          Images[]
-  features        Features[]
-  TechnicalData   TechnicalData @relation(fields: [technicalDataId], references: [id])
-  technicalDataId String
+  images   Images[]
+  features Features[]
 
-  Collection   Collections? @relation(fields: [collectionId], references: [id])
-  collectionId String?
+  Collection      Collections?  @relation(fields: [collectionId], references: [id])
+  collectionId    String?
+  TechnicalData   TechnicalData @relation(fields: [technicalDataId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  technicalDataId String        @unique
 }
 
 // https://res.cloudinary.com/djby1yfko/image/upload/v1731149264/23581938_2104.i301.004.S.m004.c13.404_error_isometric_composition_dqhesm.svg
@@ -76,15 +76,15 @@ model TechnicalData {
   creystal        String?
   movement        String?
 
-  dimensions   Dimensions? @relation(fields: [dimensionsId], references: [id])
-  dimensionsId String?
-  Products     Products[]
+  dimensions   Dimensions? @relation(fields: [dimensionsId], references: [id], onDelete: Cascade)
+  dimensionsId String?     @unique
+  Products     Products?
 }
 
 model Dimensions {
-  id            String          @id @default(uuid())
+  id            String         @id @default(uuid())
   diameter      String
   length        String
   thickness     String
-  TechnicalData TechnicalData[]
+  TechnicalData TechnicalData?
 }

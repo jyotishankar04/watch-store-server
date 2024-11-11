@@ -18,13 +18,24 @@ import {
   updateProduct,
 } from "../controllers/products.controller";
 import { getFeatures } from "../controllers/feature.controller";
+import { getAllUsers } from "../controllers/users.controller";
+import { upload } from "../../middlewares/multer.middlewares";
 const router = Router();
 
 router.post("/auth", authenticateAdmin);
 router.get("/auth", adminAuthMiddleware, checkSession);
 
+//! User
+
+router.get("/users", adminAuthMiddleware, getAllUsers);
+
 //  !collections
-router.post("/collections", adminAuthMiddleware, addCollection);
+router.post(
+  "/collections",
+  adminAuthMiddleware,
+  upload.fields([{ name: "collectionImage", maxCount: 1 }]),
+  addCollection
+);
 router.get("/collections", adminAuthMiddleware, getAllCollection);
 router.delete("/collections/:id", adminAuthMiddleware, deleteCollection);
 router.patch("/collections/:id", adminAuthMiddleware, updateCollection);

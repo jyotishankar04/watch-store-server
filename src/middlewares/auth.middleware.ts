@@ -2,10 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { Config } from "../config/config";
 import prisma from "../config/prisma.config";
-
-export interface CustomRequest extends Request {
-  userId?: string;
-}
+import { CustomRequest } from "../types/types";
 
 export const authMiddleware = (
   req: Request,

@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import createHttpError from "http-errors";
 import { createCollectionSchema } from "../../utils/adminValidator";
 import prisma from "../../config/prisma.config";
+import { CustomRequest } from "../../types/types";
 
 const addCollection = async (
   req: Request,
@@ -19,6 +20,13 @@ const addCollection = async (
         )
       );
     }
+    const _req = req as CustomRequest;
+    const file = _req.files?.collectionImage?.[0].path;
+    console.log(file);
+    if (!file) {
+      return next(createHttpError(400, "Files are required"));
+    }
+
     const isExist = await prisma.collections.findFirst({
       where: {
         name: body.name,
@@ -44,6 +52,7 @@ const addCollection = async (
       data: collection,
     });
   } catch (error) {
+    console.log(error);
     return next(createHttpError(500, "Something went wrong"));
   }
 };
@@ -83,9 +92,29 @@ const deleteCollection = async (
   try {
     const id = req.params.id;
     const result = await prisma.$transaction(async (prisma) => {
-      await prisma.products.deleteMany({
+      await prisma.images.deleteMany({
         where: {
-          collectionId: id,
+          Products: {
+            collectionId: id,
+          },
+        },
+      });
+
+      await prisma.features.deleteMany({
+        where: {
+          Products: {
+            collectionId: id,
+          },
+        },
+      });
+
+      await prisma.dimensions.deleteMany({
+        where: {
+          TechnicalData: {
+            Products: {
+              collectionId: id,
+            },
+          },
         },
       });
 
