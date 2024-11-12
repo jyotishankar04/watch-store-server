@@ -18,6 +18,8 @@ model User {
   isAdmin        Boolean  @default(false)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+
+  Cart Cart?
 }
 
 model Collections {
@@ -48,9 +50,11 @@ model Products {
   collectionId    String?
   TechnicalData   TechnicalData @relation(fields: [technicalDataId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   technicalDataId String        @unique
+  Stocks          Stocks        @relation(fields: [stocksId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  stocksId        String        @unique
+  CartItem        CartItem[]
 }
 
-// https://res.cloudinary.com/djby1yfko/image/upload/v1731149264/23581938_2104.i301.004.S.m004.c13.404_error_isometric_composition_dqhesm.svg
 model Images {
   id         String    @id @default(uuid())
   url        String
@@ -88,4 +92,35 @@ model Dimensions {
   length        String
   thickness     String
   TechnicalData TechnicalData?
+}
+
+model Stocks {
+  id        String   @id @default(uuid())
+  quantity  Int      @default(5)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  Products Products?
+}
+
+model Cart {
+  id        String   @id @default(uuid())
+  userId    String   @unique // Ensures each user has only one cart
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CartItem[]
+}
+
+model CartItem {
+  id        String   @id @default(uuid())
+  cartId    String
+  productId String
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cart    Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product Products @relation(fields: [productId], references: [id], onDelete: Cascade)
 }

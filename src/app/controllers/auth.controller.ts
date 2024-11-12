@@ -14,7 +14,6 @@ const authenticateUser = async (
 ): Promise<any> => {
   try {
     const body = req.body;
-    console.log(body);
     const validate = userCreateSchema.safeParse(body);
 
     if (!validate.success) {
@@ -97,34 +96,6 @@ const authenticateUser = async (
   }
 };
 
-const getProfile = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<any> => {
-  try {
-    const _req = req as CustomRequest;
-    const id = _req.userId;
-
-    const user = await prisma.user.findUnique({
-      where: {
-        id: id,
-      },
-    });
-
-    if (!user) {
-      return next(createHttpError(401, "Unauthorized"));
-    }
-
-    return res.status(200).json({
-      success: true,
-      data: user,
-    });
-  } catch (error) {
-    return next(createHttpError(500, "Something went wrong"));
-  }
-};
-
 const logout = async (
   req: Request,
   res: Response,
@@ -141,4 +112,4 @@ const logout = async (
   }
 };
 
-export { authenticateUser, getProfile };
+export { authenticateUser };

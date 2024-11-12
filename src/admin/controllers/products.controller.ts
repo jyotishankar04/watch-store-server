@@ -87,6 +87,11 @@ const addProduct = async (
             ),
           },
         },
+        Stocks: {
+          create: {
+            quantity: 5,
+          },
+        },
         TechnicalData: {
           create: {
             case: body.case,

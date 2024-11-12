@@ -11,6 +11,7 @@ export const authMiddleware = (
 ): any => {
   try {
     const accessToken = req.cookies.accessToken;
+    console.log(accessToken);
     if (!accessToken) {
       return res.status(401).json({
         success: false,
@@ -20,6 +21,7 @@ export const authMiddleware = (
     const { id } = jwt.verify(accessToken, Config.JWT_SECRET as string) as {
       id: string;
     };
+    console.log("user id", id);
 
     (req as CustomRequest).userId = id;
 
