@@ -40,11 +40,11 @@ model Products {
   description String?
   price       Float
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  images   Images[]
-  features Features[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  isNew     Boolean    @default(false)
+  images    Images[]
+  features  Features[]
 
   Collection      Collections?  @relation(fields: [collectionId], references: [id])
   collectionId    String?
