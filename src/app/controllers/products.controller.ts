@@ -101,10 +101,17 @@ const getProductById = async (
     if (!product) {
       return next(createHttpError(404, "Product not found"));
     }
+    let isInStock = false;
+    if (product.Stocks.quantity > 0) {
+      isInStock = true;
+    }
 
     return res.status(200).json({
       success: true,
-      data: product,
+      data: {
+        ...product,
+        isInStock,
+      },
     });
   } catch (error) {
     return next(createHttpError(500, "Something went wrong"));

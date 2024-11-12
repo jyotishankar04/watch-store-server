@@ -3,6 +3,7 @@ import AdminRoutes from "./src/admin/routes/index.routes";
 import AuthRoutes from "./src/app/routes/auth.routes";
 import UserRoutes from "./src/app/routes/user.routes";
 import ProductRoutes from "./src/app/routes/products.routes";
+import CartRoutes from "./src/app/routes/cart.routes";
 import globalErrorHandler from "./GlobalErrorHandler";
 import { HttpError } from "http-errors";
 import cookieParser from "cookie-parser";
@@ -26,6 +27,7 @@ app.use("/api/v1/admin", AdminRoutes);
 app.use("/api/v1/user", UserRoutes);
 app.use("/api/v1/auth", AuthRoutes);
 app.use("/api/v1/products", ProductRoutes);
+app.use("/api/v1/cart", CartRoutes);
 
 app.use(
   "*",
