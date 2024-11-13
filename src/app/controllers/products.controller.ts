@@ -61,7 +61,7 @@ const getProducts = async (
     }
 
     return res.json({
-      status: "success",
+      success: true,
       message: "Products retrieved successfully",
       data: products,
     });
