@@ -144,6 +144,9 @@ const getAllCartItems = async (
           },
         },
       },
+      orderBy: {
+        createdAt: "desc",
+      },
     });
     if (!cartItems) {
       return next(createHttpError(500, "Something went wrong"));
@@ -167,6 +170,7 @@ const updateCartItem = async (
   try {
     const { id } = req.params;
     const { quantity } = req.body;
+    console.log(id);
     if (!quantity || quantity < 0) {
       return next(createHttpError(400, "Quantity is required"));
     }

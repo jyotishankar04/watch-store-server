@@ -9,7 +9,6 @@ const getUser = async (
   next: NextFunction
 ): Promise<any> => {
   const { userId } = req as CustomRequest;
-  console.log(userId);
   try {
     const users = await prisma.user.findFirst({
       where: { id: userId },

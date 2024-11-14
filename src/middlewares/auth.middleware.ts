@@ -11,29 +11,29 @@ export const authMiddleware = (
 ): any => {
   try {
     const accessToken = req.cookies.accessToken;
-    console.log(accessToken);
+
     if (!accessToken) {
       return res.status(401).json({
         success: false,
-        message: "Unauthorized",
+        message: "Unauthorized ",
       });
     }
     const { id } = jwt.verify(accessToken, Config.JWT_SECRET as string) as {
       id: string;
     };
-    console.log("user id", id);
 
     (req as CustomRequest).userId = id;
 
     if (!id) {
       return res.status(401).json({
         success: false,
-        message: "Unauthorized",
+        message: "Unauthorized ",
       });
     }
 
     next();
   } catch (error) {
+    console.log(error);
     return res.status(401).json({
       success: false,
       message: "Unauthorized",

@@ -82,7 +82,7 @@ const authenticateUser = async (
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
       sameSite: "none",
-      secure: true,
+      // secure: true,
     });
 
     return res.status(200).json({
