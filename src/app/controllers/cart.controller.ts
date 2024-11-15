@@ -199,4 +199,42 @@ const updateCartItem = async (
   }
 };
 
-export { addToCart, getAllCartItems, updateCartItem };
+const deleteCartItem = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<any> => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return next(createHttpError(400, "Cart item ID is required"));
+    }
+    const isCartItemExist = await prisma.cartItem.findUnique({
+      where: {
+        id: id,
+      },
+    });
+    if (!isCartItemExist) {
+      return next(createHttpError(400, "Cart item not found"));
+    }
+
+    const cartItem = await prisma.cartItem.delete({
+      where: {
+        id: id,
+      },
+    });
+    if (!cartItem) {
+      return next(createHttpError(500, "Something went wrong"));
+    }
+    return res.json({
+      success: true,
+      message: "Cart item deleted successfully",
+      data: cartItem,
+    });
+  } catch (error) {
+    console.log(error);
+    return next(createHttpError(500, "Something went wrong"));
+  }
+};
+
+export { addToCart, getAllCartItems, updateCartItem, deleteCartItem };
