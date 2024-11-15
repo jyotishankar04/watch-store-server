@@ -37,6 +37,7 @@ const getProducts = async (
 
     const products = await prisma.products.findMany({
       where: where,
+
       include: {
         TechnicalData: {
           include: {

@@ -114,7 +114,7 @@ const getAllCartItems = async (
     if (!user) {
       return next(createHttpError(404, "User not found"));
     }
-    const cartItems = await prisma.cartItem.findMany({
+    let cartItems = await prisma.cartItem.findMany({
       where: {
         cart: {
           user: {
@@ -144,6 +144,7 @@ const getAllCartItems = async (
           },
         },
       },
+
       orderBy: {
         createdAt: "desc",
       },
@@ -151,10 +152,18 @@ const getAllCartItems = async (
     if (!cartItems) {
       return next(createHttpError(500, "Something went wrong"));
     }
+    // Additional Computations
+    const checkoutPrice = cartItems.reduce((acc, item) => {
+      return acc + item.product.price * item.quantity;
+    }, 0);
+
     return res.json({
       success: true,
       message: "Cart items retrieved successfully",
-      data: cartItems,
+      data: {
+        cartItems,
+        checkoutPrice,
+      },
     });
   } catch (error) {
     console.log(error);
@@ -209,18 +218,28 @@ const deleteCartItem = async (
     if (!id) {
       return next(createHttpError(400, "Cart item ID is required"));
     }
-    const isCartItemExist = await prisma.cartItem.findUnique({
+    const { userId } = req as CustomRequest;
+    if (!userId) {
+      return next(createHttpError(401, "Unauthorized"));
+    }
+    const user = await prisma.user.findUnique({
       where: {
-        id: id,
+        id: userId,
+      },
+      include: {
+        Cart: true,
       },
     });
-    if (!isCartItemExist) {
-      return next(createHttpError(400, "Cart item not found"));
+    if (!user) {
+      return next(createHttpError(404, "User not found"));
     }
 
     const cartItem = await prisma.cartItem.delete({
       where: {
-        id: id,
+        cartId_productId: {
+          cartId: user.Cart?.id as string,
+          productId: id,
+        },
       },
     });
     if (!cartItem) {

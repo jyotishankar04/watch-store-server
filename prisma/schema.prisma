@@ -123,4 +123,6 @@ model CartItem {
 
   cart    Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
   product Products @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([cartId, productId]) // [cartId, productId] is unique for all products in the cart list
 }
