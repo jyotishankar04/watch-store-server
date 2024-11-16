@@ -112,4 +112,4 @@ const logout = async (
   }
 };
 
-export { authenticateUser };
+export { authenticateUser, logout };

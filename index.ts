@@ -4,6 +4,7 @@ import AuthRoutes from "./src/app/routes/auth.routes";
 import UserRoutes from "./src/app/routes/user.routes";
 import ProductRoutes from "./src/app/routes/products.routes";
 import CartRoutes from "./src/app/routes/cart.routes";
+import ReviewRoutes from "./src/app/routes/review.routes";
 import CollectionController from "./src/app/routes/collections.routes";
 import globalErrorHandler from "./GlobalErrorHandler";
 import { HttpError } from "http-errors";
@@ -30,6 +31,7 @@ app.use("/api/v1/auth", AuthRoutes);
 app.use("/api/v1/products", ProductRoutes);
 app.use("/api/v1/cart", CartRoutes);
 app.use("/api/v1/collections", CollectionController);
+app.use("/api/v1/reviews", ReviewRoutes);
 
 app.use(
   "*",

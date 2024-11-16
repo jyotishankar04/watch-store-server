@@ -19,7 +19,8 @@ model User {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  Cart Cart?
+  Cart    Cart?
+  Reviews Reviews[]
 }
 
 model Collections {
@@ -53,6 +54,7 @@ model Products {
   Stocks          Stocks        @relation(fields: [stocksId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   stocksId        String        @unique
   CartItem        CartItem[]
+  Reviews         Reviews[]
 }
 
 model Images {
@@ -125,4 +127,20 @@ model CartItem {
   product Products @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([cartId, productId]) // [cartId, productId] is unique for all products in the cart list
+}
+
+model Reviews {
+  id        String   @id @default(uuid())
+  content   String
+  rating    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  product   Products @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+
+  @@unique([userId, productId])
 }
