@@ -57,6 +57,17 @@ const createReview = async (
   }
 };
 
+// algo
+/*
+  1. get the product id from the parameters
+  2. find the user id from the request context 
+  3. fing the user from the database and validate it
+  4. get the reviews from the database
+  5. calculate the average rating for the product
+  6. calculate the total number of reviews for the product
+  7. calculate the average rating for the product
+  8. return the reviews and the average rating and the total number of reviews
+*/
 const getReviews = async (
   req: Request,
   res: Response,
