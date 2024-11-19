@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import createHttpError from "http-errors";
 import { CustomRequest } from "../../types/types";
 import prisma from "../../config/prisma.config";
+import { getAverageReviewCount } from "../services/reviews.services";
 
 const createReview = async (
   req: Request,
@@ -31,10 +32,23 @@ const createReview = async (
       return next(createHttpError(404, "Product not found"));
     }
 
+    const isReviewExists = await prisma.reviews.findUnique({
+      where: {
+        userId_productId: {
+          userId,
+          productId,
+        },
+      },
+    });
+    if (isReviewExists) {
+      return next(createHttpError(400, "You already have a review"));
+    }
+
     const { rating, comment } = req.body;
     if (!rating || !comment) {
       return next(createHttpError(400, "Rating and comment are required"));
     }
+
     const review = await prisma.reviews.create({
       data: {
         rating,
@@ -45,7 +59,9 @@ const createReview = async (
     });
 
     if (!review) {
-      return next(createHttpError(500, "Something went wrong"));
+      return next(
+        createHttpError(500, "Something went wrong in creating review")
+      );
     }
 
     return res.json({
@@ -53,6 +69,7 @@ const createReview = async (
       message: "Review created successfully",
     });
   } catch (error) {
+    console.log(error);
     return next(createHttpError(500, "Something went wrong"));
   }
 };
@@ -100,10 +117,7 @@ const getReviews = async (
     if (!reviews) {
       return next(createHttpError(500, "Something went wrong"));
     }
-    const averageRating =
-      reviews.reduce((acc, review) => {
-        return acc + review.rating;
-      }, 0) / reviews.length;
+    const { averageRating } = getAverageReviewCount(reviews);
     const totalReviews = reviews.length;
     return res.json({
       success: true,

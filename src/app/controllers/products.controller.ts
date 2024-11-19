@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import createHttpError from "http-errors";
 import prisma from "../../config/prisma.config";
+import { getAverageReviewCount } from "../services/reviews.services";
 
 const getProducts = async (
   req: Request,
@@ -96,12 +97,34 @@ const getProductById = async (
         features: true,
         images: true,
         Collection: true,
+        Reviews: {
+          include: {
+            user: {
+              select: {
+                name: true,
+                image: true,
+                id: true,
+                email: true,
+              },
+            },
+          },
+        },
         _count: true,
       },
     });
+
     if (!product) {
       return next(createHttpError(404, "Product not found"));
     }
+    const { averageRating } = getAverageReviewCount(product?.Reviews);
+
+    const newProductResponse = {
+      ...product,
+      Reviews: {
+        reviews: Array.from(product.Reviews),
+        averageRating,
+      },
+    };
     let isInStock = false;
     if (product.Stocks.quantity > 0) {
       isInStock = true;
@@ -110,7 +133,7 @@ const getProductById = async (
     return res.status(200).json({
       success: true,
       data: {
-        ...product,
+        ...newProductResponse,
         isInStock,
       },
     });
