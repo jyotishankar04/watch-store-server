@@ -19,8 +19,9 @@ model User {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  Cart    Cart?
-  Reviews Reviews[]
+  Cart      Cart?
+  Reviews   Reviews[]
+  Addresses Addresses[]
 }
 
 model Collections {
@@ -143,4 +144,22 @@ model Reviews {
   productId String
 
   @@unique([userId, productId])
+}
+
+model Addresses {
+  id            String  @id @default(uuid())
+  name          String
+  address       String
+  landmark      String?
+  city          String
+  state         String
+  zip           String
+  country       String
+  contactNumber String
+
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }

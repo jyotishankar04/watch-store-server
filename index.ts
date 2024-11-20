@@ -6,6 +6,7 @@ import ProductRoutes from "./src/app/routes/products.routes";
 import CartRoutes from "./src/app/routes/cart.routes";
 import ReviewRoutes from "./src/app/routes/review.routes";
 import CollectionController from "./src/app/routes/collections.routes";
+import AddressRoutes from "./src/app/routes/address.routes";
 import globalErrorHandler from "./GlobalErrorHandler";
 import { HttpError } from "http-errors";
 import cookieParser from "cookie-parser";
@@ -23,8 +24,16 @@ app.use(
 );
 
 app.get("/", (req, res) => {
-  res.send("hello world!");
+  res.send("Welcome to Justwatches");
 });
+app.get("/healthcheck", (req, res, next) => {
+  res.status(200).json({
+    success: true,
+    message: "Welcome to Justwatches",
+    description: "Your server is up and running!",
+  });
+});
+
 app.use("/api/v1/admin", AdminRoutes);
 app.use("/api/v1/user", UserRoutes);
 app.use("/api/v1/auth", AuthRoutes);
@@ -32,6 +41,7 @@ app.use("/api/v1/products", ProductRoutes);
 app.use("/api/v1/cart", CartRoutes);
 app.use("/api/v1/collections", CollectionController);
 app.use("/api/v1/reviews", ReviewRoutes);
+app.use("/api/v1/address", AddressRoutes);
 
 app.use(
   "*",
