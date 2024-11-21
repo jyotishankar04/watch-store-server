@@ -49,9 +49,16 @@ const createAddress = async (
     if (!userId) {
       return next(createHttpError(401, "Unauthorized"));
     }
-    const user = await prisma.user.findUnique({ where: { id: userId } });
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { Addresses: true },
+    });
+
     if (!user) {
       return next(createHttpError(404, "User not found"));
+    }
+    if (user.Addresses.length >= 5) {
+      return next(createHttpError(400, "Cannot add more than 5 addresses"));
     }
 
     const newAddress = await prisma.addresses.create({
