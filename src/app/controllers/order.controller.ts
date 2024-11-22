@@ -142,4 +142,97 @@ const createOrder = async (
   }
 };
 
-export { createOrder };
+const getAllOrders = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<any> => {
+  try {
+    const { userId } = req as CustomRequest;
+    if (!userId) {
+      return next(createHttpError(401, "Unauthorized"));
+    }
+
+    const user = await getUserById(userId);
+    if (!user) {
+      return next(createHttpError(401, "Unauthorized"));
+    }
+    const orders = await prisma.orders.findMany({
+      where: {
+        user: {
+          id: userId,
+        },
+      },
+      include: {
+        OrderedProducts: {
+          include: {
+            product: true,
+          },
+        },
+        address: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+    if (!orders) {
+      return next(createHttpError(500, "Something went wrong"));
+    }
+    return res.json({
+      success: true,
+      message: "Orders fetched successfully",
+      data: orders,
+    });
+  } catch (error) {
+    console.error(error);
+    return next(createHttpError(500, "Something went wrong"));
+  }
+};
+const getOrderById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<any> => {
+  try {
+    const { userId } = req as CustomRequest;
+    if (!userId) {
+      return next(createHttpError(401, "Unauthorized"));
+    }
+    const { id } = req.params;
+
+    const user = await getUserById(userId);
+    if (!user) {
+      return next(createHttpError(401, "Unauthorized"));
+    }
+    const order = await prisma.orders.findUnique({
+      where: {
+        id: id,
+      },
+      include: {
+        OrderedProducts: {
+          include: {
+            product: {
+              include: {
+                images: true,
+              },
+            },
+          },
+        },
+        address: true,
+      },
+    });
+    if (!order) {
+      return next(createHttpError(404, "Order not found"));
+    }
+    return res.json({
+      success: true,
+      message: "Order fetched successfully",
+      data: order,
+    });
+  } catch (error) {
+    console.error(error);
+    return next(createHttpError(500, "Something went wrong"));
+  }
+};
+
+export { createOrder, getAllOrders, getOrderById };
