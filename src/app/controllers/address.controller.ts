@@ -111,6 +111,7 @@ const getAddresses = async (
     }
     const addresses = await prisma.addresses.findMany({
       where: { userId },
+      orderBy: { createdAt: "desc" },
     });
     res.json({ success: true, message: "Addresses fetched", data: addresses });
   } catch (err) {

@@ -19,7 +19,11 @@ const addToCart = async (
         id: userId,
       },
       include: {
-        Cart: true,
+        Cart: {
+          select: {
+            id: true,
+          },
+        },
       },
     });
     if (!user) {
@@ -29,7 +33,11 @@ const addToCart = async (
       where: {
         id: id,
       },
+      include: {
+        Stocks: true,
+      },
     });
+
     if (!product) {
       return next(createHttpError(404, "Product not found"));
     }
@@ -49,6 +57,10 @@ const addToCart = async (
       return next(createHttpError(400, "Product already in cart"));
     }
     let cartItem;
+    if (product.Stocks.quantity <= 0) {
+      return next(createHttpError(400, "Product out of stock"));
+    }
+
     if (!user.Cart?.id) {
       const cart = await prisma.cart.create({
         data: {
@@ -65,6 +77,7 @@ const addToCart = async (
           cart: {
             connect: { id: cart.id },
           },
+          quantity: 1,
         },
       });
     } else {
@@ -76,6 +89,7 @@ const addToCart = async (
           cart: {
             connect: { id: user.Cart.id },
           },
+          quantity: 1,
         },
       });
     }
@@ -179,13 +193,41 @@ const updateCartItem = async (
   try {
     const { id } = req.params;
     const { quantity } = req.body;
-    console.log(id);
     if (!quantity || quantity < 0) {
       return next(createHttpError(400, "Quantity is required"));
     }
     if (quantity > 5) {
       return next(createHttpError(400, "Quantity cannot be more than 5"));
     }
+
+    const existingCartItem = await prisma.cartItem.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        product: {
+          include: {
+            Stocks: true,
+          },
+        },
+      },
+    });
+
+    if (!existingCartItem) {
+      return next(createHttpError(404, "To set quanity, item must be in cart"));
+    }
+    if (quantity > 5) {
+      return next(createHttpError(400, "Quantity cannot be more than 5"));
+    }
+    if (existingCartItem.product.Stocks.quantity < quantity && quantity > 0) {
+      return next(
+        createHttpError(
+          400,
+          "Out of order quantity, please reduce the quantity"
+        )
+      );
+    }
+
     const cartItem = await prisma.cartItem.update({
       where: {
         id: id,
@@ -194,6 +236,7 @@ const updateCartItem = async (
         quantity: Number(quantity),
       },
     });
+
     if (!cartItem) {
       return next(createHttpError(500, "Something went wrong"));
     }

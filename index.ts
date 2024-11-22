@@ -7,6 +7,7 @@ import CartRoutes from "./src/app/routes/cart.routes";
 import ReviewRoutes from "./src/app/routes/review.routes";
 import CollectionController from "./src/app/routes/collections.routes";
 import AddressRoutes from "./src/app/routes/address.routes";
+import OrderController from "./src/app/routes/order.routes";
 import globalErrorHandler from "./GlobalErrorHandler";
 import { HttpError } from "http-errors";
 import cookieParser from "cookie-parser";
@@ -42,6 +43,7 @@ app.use("/api/v1/cart", CartRoutes);
 app.use("/api/v1/collections", CollectionController);
 app.use("/api/v1/reviews", ReviewRoutes);
 app.use("/api/v1/address", AddressRoutes);
+app.use("/api/v1/orders", OrderController);
 
 app.use(
   "*",
