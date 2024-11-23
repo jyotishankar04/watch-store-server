@@ -26,6 +26,7 @@ const createOrder = async (
         id: shippingAddressId,
       },
     });
+    console.log(address);
     if (!address) {
       return next(createHttpError(404, "Address not found"));
     }
