@@ -176,8 +176,7 @@ model Orders {
   totalPrice Float
   status     OrdersStatus
 
-  paymentType PaymentMethods
-  paymentId   String
+  paymentId String
 
   addressId       String
   address         Addresses?        @relation(fields: [addressId], references: [id], onDelete: Cascade, onUpdate: Cascade)

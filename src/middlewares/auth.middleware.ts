@@ -11,7 +11,6 @@ export const authMiddleware = (
 ): any => {
   try {
     const accessToken = req.cookies.accessToken;
-
     if (!accessToken) {
       return res.status(401).json({
         success: false,
@@ -33,7 +32,6 @@ export const authMiddleware = (
 
     next();
   } catch (error) {
-    console.log(error);
     return res.status(401).json({
       success: false,
       message: "Unauthorized",
