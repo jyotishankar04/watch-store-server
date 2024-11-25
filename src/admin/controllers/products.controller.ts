@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import createHttpError from "http-errors";
 import prisma from "../../config/prisma.config";
 import { createProductSchema } from "../../utils/adminValidator";
-import { CustomRequest } from "../../types/types";
+import { CustomRequest, productSortingTypes } from "../../types/types";
 import {
   deleteMultipleOnCloudinary,
   deleteOnCloudinary,
@@ -143,7 +143,68 @@ const getAllProducts = async (
   next: NextFunction
 ): Promise<any> => {
   try {
+    const {
+      page = 1,
+      limit = 20,
+      collection = "",
+      orderBy = productSortingTypes.NEWEST,
+    } = req.query;
+
+    const skip = (Number(page) - 1) * Number(limit);
+    const collections = prisma.collections.findMany();
+    const collectionsNames = (await collections).map((collection) => {
+      return collection.name.toUpperCase();
+    });
+
+    const where = collectionsNames.includes(String(collection).toUpperCase())
+      ? {
+          Collection: {
+            name: collection as string,
+          },
+        }
+      : {};
+
+    let orderByOptions: {
+      [key: string]:
+        | "asc"
+        | "desc"
+        | {
+            _count: "asc" | "desc";
+          };
+    } = {
+      createdAt: "desc",
+    };
+
+    if (orderBy === productSortingTypes.NEWEST) {
+      orderByOptions.createdAt = "desc";
+    } else if (orderBy === productSortingTypes.OLDEST) {
+      orderByOptions.createdAt = "asc";
+    } else if (orderBy === productSortingTypes.HIGHEST_PRICE) {
+      orderByOptions = { price: "desc" };
+    } else if (orderBy === productSortingTypes.LOWEST_PRICE) {
+      orderByOptions = { price: "asc" };
+    } else if (orderBy === productSortingTypes.ATOZ) {
+      orderByOptions = { name: "asc" };
+    } else if (orderBy === productSortingTypes.ZTOA) {
+      orderByOptions = { name: "desc" };
+    } else if (orderBy === productSortingTypes.RATING) {
+      orderByOptions = {
+        Reviews: {
+          _count: "desc",
+        },
+      };
+    } else if (orderBy === productSortingTypes.POPULARITY) {
+      orderByOptions = {
+        OrderedProducts: {
+          _count: "desc",
+        },
+      };
+    }
+
     const products = await prisma.products.findMany({
+      where,
+      skip,
+      take: Number(limit),
       include: {
         TechnicalData: {
           include: {
@@ -153,8 +214,18 @@ const getAllProducts = async (
         features: true,
         images: true,
         Collection: true,
+        Reviews: true,
+        Stocks: true,
+        _count: {
+          select: {
+            Reviews: true,
+            OrderedProducts: true,
+          },
+        },
       },
+      orderBy: orderByOptions,
     });
+
     if (!products) {
       return next(createHttpError(500, "Something went wrong"));
     }

@@ -22,3 +22,14 @@ export enum PaymentMethods {
   NET_BANKING = "NET_BANKING",
   CASH_ON_DELIVERY = "CASH_ON_DELIVERY",
 }
+
+export enum productSortingTypes {
+  NEWEST = "newest",
+  OLDEST = "oldest",
+  LOWEST_PRICE = "lowest_price",
+  HIGHEST_PRICE = "highest_price",
+  ATOZ = "atoz",
+  ZTOA = "ztoa",
+  RATING = "rating",
+  POPULARITY = "popularity",
+}
