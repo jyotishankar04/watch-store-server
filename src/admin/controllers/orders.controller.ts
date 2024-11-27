@@ -34,29 +34,27 @@ const getAllOrders = async (
       HIGHEST_PRICE: { totalPrice: "desc" },
     };
 
-    // Convert orderBy to lowercase for matching
     const orderByField =
       orderBy &&
       Object.keys(sortingMap).includes(orderBy.toString().toUpperCase())
         ? sortingMap[orderBy.toString().toUpperCase()]
         : { createdAt: "desc" }; // Default sorting
 
-    // Fetch orders with Prisma
     const orders = await prisma.orders.findMany({
-      where: where, // Apply filters (assumes 'where' is defined earlier)
+      where: where,
       include: {
         OrderedProducts: {
           include: {
             product: {
               include: {
-                images: true, // Include images for each product
+                images: true,
               },
             },
           },
         },
-        address: true, // Include address details
+        address: true,
       },
-      orderBy: orderByField, // Apply sorting
+      orderBy: orderByField,
     });
 
     // Handle case where no orders are found
