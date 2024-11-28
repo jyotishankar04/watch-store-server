@@ -69,7 +69,6 @@ const createReview = async (
       message: "Review created successfully",
     });
   } catch (error) {
-    console.log(error);
     return next(createHttpError(500, "Something went wrong"));
   }
 };

@@ -246,7 +246,6 @@ const updateCartItem = async (
       data: cartItem,
     });
   } catch (error) {
-    console.log(error);
     return next(createHttpError(500, "Something went wrong"));
   }
 };
