@@ -2,6 +2,8 @@ import { NextFunction, Request, Response } from "express";
 import prisma from "../../config/prisma.config";
 import createHttpError from "http-errors";
 
+// This is the controller for getting the all stocks from the database as per the product
+//
 const getStocks = async (
   req: Request,
   res: Response,
