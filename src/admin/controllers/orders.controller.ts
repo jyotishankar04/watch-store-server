@@ -3,7 +3,7 @@ import prisma from "../../config/prisma.config";
 import createHttpError from "http-errors";
 import { orderSortingTypes, OrderStatus } from "../../types/types";
 
-/// Routes for creating orders
+/// Here is the controller for getting all the order details
 const getAllOrders = async (
   req: Request,
   res: Response,
