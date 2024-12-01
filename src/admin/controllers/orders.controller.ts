@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import prisma from "../../config/prisma.config";
 import createHttpError from "http-errors";
 import { orderSortingTypes, OrderStatus } from "../../types/types";
+import { OrdersStatus, Prisma } from "@prisma/client";
 
 /// Here is the controller for getting all the order details
 const getAllOrders = async (
@@ -9,22 +10,61 @@ const getAllOrders = async (
   res: Response,
   next: NextFunction
 ): Promise<any> => {
-  let { orderBy, status } = req.query;
+  let { orderBy, status, page = 1, limit = 20 } = req.query;
+
   try {
+    const skip = (Number(page) - 1) * Number(limit);
+
     if (
       status &&
       !Object.values(OrderStatus).includes(
         status.toString().toUpperCase() as OrderStatus
       )
     ) {
-      return next(createHttpError(400, "Invalid status"));
+      status = "";
     }
-    let where;
+    let where = {};
     if (status) {
-      where = {
-        status: status.toString().toUpperCase() as OrderStatus,
-      };
+      status = status.toString().toUpperCase();
+      if (status === OrdersStatus.ORDER_PLACED) {
+        where = {
+          status: {
+            equals: OrdersStatus.ORDER_PLACED,
+          },
+        };
+      }
+      if (status === OrdersStatus.CANCELLED) {
+        where = {
+          status: {
+            equals: OrdersStatus.CANCELLED,
+          },
+        };
+      }
+      if (status === OrdersStatus.PENDING) {
+        where = {
+          status: {
+            equals: OrdersStatus.PENDING,
+          },
+        };
+      }
+      if (status === OrdersStatus.DELIVERED) {
+        where = {
+          status: {
+            equals: OrdersStatus.DELIVERED,
+          },
+        };
+      }
+      if (status === OrdersStatus.SHIPPED) {
+        where = {
+          status: {
+            equals: OrdersStatus.SHIPPED,
+          },
+        };
+      }
+    } else {
+      where = {};
     }
+    console.log(where);
     const sortingMap: Record<string, object> = {
       HIGHEST_QUANTITY: { OrderedProducts: { _count: "desc" } },
       LOWEST_QUANTITY: { OrderedProducts: { _count: "asc" } },
@@ -38,7 +78,7 @@ const getAllOrders = async (
       orderBy &&
       Object.keys(sortingMap).includes(orderBy.toString().toUpperCase())
         ? sortingMap[orderBy.toString().toUpperCase()]
-        : { createdAt: "desc" }; // Default sorting
+        : { createdAt: "desc" };
 
     const orders = await prisma.orders.findMany({
       where: where,
@@ -55,6 +95,8 @@ const getAllOrders = async (
         address: true,
       },
       orderBy: orderByField,
+      take: Number(limit),
+      skip: skip,
     });
 
     // Handle case where no orders are found
