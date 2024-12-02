@@ -21,7 +21,10 @@ import { getFeatures } from "../controllers/feature.controller";
 import { getAllUsers } from "../controllers/users.controller";
 import { upload } from "../../middlewares/multer.middlewares";
 import { getStocks, updateStocks } from "../controllers/stocks.controller";
-import { getAllOrders } from "../controllers/orders.controller";
+import {
+  getAllOrders,
+  updateOrderStatus,
+} from "../controllers/orders.controller";
 const router = Router();
 
 router.post("/auth", authenticateAdmin);
@@ -64,5 +67,6 @@ router.patch("/stocks/:id", adminAuthMiddleware, updateStocks); /// update stock
 //! Orders Routes
 
 router.get("/orders", adminAuthMiddleware, getAllOrders);
+router.patch("/orders/:orderId", adminAuthMiddleware, updateOrderStatus);
 
 export default router;

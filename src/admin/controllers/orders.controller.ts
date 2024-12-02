@@ -64,7 +64,6 @@ const getAllOrders = async (
     } else {
       where = {};
     }
-    console.log(where);
     const sortingMap: Record<string, object> = {
       HIGHEST_QUANTITY: { OrderedProducts: { _count: "desc" } },
       LOWEST_QUANTITY: { OrderedProducts: { _count: "asc" } },
@@ -141,16 +140,41 @@ const updateOrderStatus = async (
     if (!status) {
       return next(createHttpError(400, "Status is required"));
     }
+    OrdersStatus;
 
     const validStatuses = [
-      "PENDING",
-      "PROCESSING",
-      "SHIPPED",
-      "DELIVERED",
-      "CANCELLED",
+      OrdersStatus.ORDER_PLACED,
+      OrdersStatus.CANCELLED,
+      OrdersStatus.PENDING,
+      OrdersStatus.DELIVERED,
+      OrdersStatus.SHIPPED,
     ];
     if (!validStatuses.includes(status.toUpperCase())) {
       return next(createHttpError(400, "Invalid status"));
+    }
+    if (status.toUpperCase() === OrderStatus.CANCELLED) {
+      return next(createHttpError(400, "Cancel feature is not implemented"));
+    }
+    const existingOrder = await prisma.orders.findUnique({
+      where: {
+        id: orderId,
+      },
+    });
+    if (!existingOrder) {
+      return next(createHttpError(404, "Order not found"));
+    }
+    if (existingOrder.status === status.toUpperCase()) {
+      return next(createHttpError(400, "Order is already in this status"));
+    }
+    if (existingOrder.status == OrderStatus.DELIVERED) {
+      return next(
+        createHttpError(400, "Order is Delivered, Cannot change status")
+      );
+    }
+    if (existingOrder.status == OrderStatus.CANCELLED) {
+      return next(
+        createHttpError(400, "Order is Cancelled, Cannot change status")
+      );
     }
 
     const order = await prisma.orders.update({
@@ -158,30 +182,7 @@ const updateOrderStatus = async (
         id: orderId,
       },
       data: {
-        status: status.toUpperCase(),
-      },
-      include: {
-        OrderedProducts: {
-          include: {
-            product: {
-              include: {
-                images: true,
-              },
-            },
-          },
-        },
-        user: {
-          select: {
-            name: true,
-            email: true,
-            image: true,
-            id: true,
-            isAdmin: true,
-            authProvider: true,
-            createdAt: true,
-          },
-        },
-        address: true,
+        status: validStatuses.filter((s) => s === status.toUpperCase())[0],
       },
     });
 
@@ -195,8 +196,9 @@ const updateOrderStatus = async (
       data: order,
     });
   } catch (error) {
+    console.error(error);
     return next(createHttpError(500, "Something went wrong"));
   }
 };
 
-export { getAllOrders };
+export { getAllOrders, updateOrderStatus };
