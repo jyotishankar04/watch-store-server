@@ -92,6 +92,17 @@ const getAllOrders = async (
             },
           },
         },
+        user: {
+          select: {
+            name: true,
+            email: true,
+            image: true,
+            id: true,
+            isAdmin: true,
+            authProvider: true,
+            createdAt: true,
+          },
+        },
         address: true,
       },
       orderBy: orderByField,
@@ -108,6 +119,80 @@ const getAllOrders = async (
       success: true,
       message: "Orders fetched successfully",
       data: orders,
+    });
+  } catch (error) {
+    return next(createHttpError(500, "Something went wrong"));
+  }
+};
+
+const updateOrderStatus = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<any> => {
+  try {
+    const { orderId } = req.params;
+    const { status } = req.body;
+
+    if (!orderId) {
+      return next(createHttpError(400, "Order ID is required"));
+    }
+
+    if (!status) {
+      return next(createHttpError(400, "Status is required"));
+    }
+
+    const validStatuses = [
+      "PENDING",
+      "PROCESSING",
+      "SHIPPED",
+      "DELIVERED",
+      "CANCELLED",
+    ];
+    if (!validStatuses.includes(status.toUpperCase())) {
+      return next(createHttpError(400, "Invalid status"));
+    }
+
+    const order = await prisma.orders.update({
+      where: {
+        id: orderId,
+      },
+      data: {
+        status: status.toUpperCase(),
+      },
+      include: {
+        OrderedProducts: {
+          include: {
+            product: {
+              include: {
+                images: true,
+              },
+            },
+          },
+        },
+        user: {
+          select: {
+            name: true,
+            email: true,
+            image: true,
+            id: true,
+            isAdmin: true,
+            authProvider: true,
+            createdAt: true,
+          },
+        },
+        address: true,
+      },
+    });
+
+    if (!order) {
+      return next(createHttpError(404, "Order not found"));
+    }
+
+    return res.json({
+      success: true,
+      message: "Order status updated successfully",
+      data: order,
     });
   } catch (error) {
     return next(createHttpError(500, "Something went wrong"));
